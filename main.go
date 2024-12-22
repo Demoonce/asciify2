@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 
 	"fyne.io/fyne/v2"
@@ -78,36 +77,38 @@ func ToText(filename string, width int, chars []rune, color bool, use_gaussian b
 }
 
 type Params struct {
-	width int
-	chars []rune
-	color bool
+	width    int
+	chars    []rune
+	color    bool
 	filename string
 }
 
 func main() {
 	a := app.NewWithID("asciify")
 	w := a.NewWindow("Asciify")
-	params := Params{0, []rune("`.-,:!^+<=*/(?{[#$%@"), true, ""}
+	params := Params{64, []rune("`.-,:!^+<=*/(?{[#$%@"), true, ""}
 	errors := widget.NewLabel("")
+	done_label := widget.NewLabel("")
+	done_label.TextStyle.Bold = true
+	done_label.Alignment = fyne.TextAlignCenter
 	width := widget.NewEntry()
-	width.SetPlaceHolder("Введите ширину")
+	width.SetPlaceHolder("Введите ширину(по умолчанию 64)")
 	width.OnChanged = func(s string) {
 		_, err := strconv.Atoi(s)
-		if err != nil {
+		if err != nil && s != "" {
 			errors.SetText("Введите целочисленное значение")
 		} else {
 			errors.SetText("")
 		}
 	}
-	
-
 
 	var result string
 
 	chars := widget.NewEntry()
-	chars.SetPlaceHolder("Введите используемые символы")
+	chars.SetPlaceHolder("Введите используемые символы(по умолчанию `.-,:!^+<=*/(?{[#$%@)")
 	file_selected := widget.NewLabel("Файл не выбран")
 	file_open := dialog.NewFileOpen(func(reader fyne.URIReadCloser, err error) {
+		done_label.SetText("")
 		if reader == nil {
 			return
 		}
@@ -125,20 +126,18 @@ func main() {
 
 	}, w)
 
-	
-	
 	select_button := widget.NewButton("Выберите изображение", func() {
 
 		file_open.Show()
 	})
-	done_label := widget.NewLabel("")
-	done_label.TextStyle.Bold = true
-	done_label.Alignment = fyne.TextAlignTrailing
+
 	generate_button := widget.NewButton("Сгенерировать", func() {
 		errors.SetText("")
 		width_value, _ := strconv.Atoi(width.Text)
 		c := chars.Text
-		params.width = width_value
+		if width_value != 0 {
+			params.width = width_value
+		}
 		if c != "" {
 			params.chars = []rune(c)
 		}
@@ -153,9 +152,8 @@ func main() {
 			result, err = ToText(params.filename, params.width, params.chars, false, false)
 			if err != nil {
 				errors.SetText(err.Error())
-				return 
+				return
 			}
-			fmt.Println(result)
 			writer.Write([]byte(result))
 			done_label.SetText("Готово")
 
@@ -163,10 +161,10 @@ func main() {
 	})
 
 	cont := container.NewVBox(
-		width, 
-		chars, 
-		container.NewHBox(file_selected, select_button), 
-		generate_button, 
+		width,
+		chars,
+		container.NewHBox(file_selected, select_button),
+		generate_button,
 		errors,
 		done_label)
 	w.Resize(fyne.NewSize(600, 600))
