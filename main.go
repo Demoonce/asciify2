@@ -90,11 +90,11 @@ func main() {
 	params := Params{0, []rune("`.-,:!^+<=*/(?{[#$%@"), true, ""}
 	errors := widget.NewLabel("")
 	width := widget.NewEntry()
-	width.SetPlaceHolder("Enter width")
+	width.SetPlaceHolder("Введите ширину")
 	width.OnChanged = func(s string) {
 		_, err := strconv.Atoi(s)
 		if err != nil {
-			errors.SetText("Please enter a numeric value")
+			errors.SetText("Введите целочисленное значение")
 		} else {
 			errors.SetText("")
 		}
@@ -105,8 +105,8 @@ func main() {
 	var result string
 
 	chars := widget.NewEntry()
-	chars.SetPlaceHolder("Enter chars(default ones are used if empty)")
-	file_selected := widget.NewLabel("No file selected")
+	chars.SetPlaceHolder("Введите используемые символы")
+	file_selected := widget.NewLabel("Файл не выбран")
 	file_open := dialog.NewFileOpen(func(reader fyne.URIReadCloser, err error) {
 		if reader == nil {
 			return
@@ -127,14 +127,14 @@ func main() {
 
 	
 	
-	select_button := widget.NewButton("Select an image", func() {
+	select_button := widget.NewButton("Выберите изображение", func() {
 
 		file_open.Show()
 	})
 	done_label := widget.NewLabel("")
 	done_label.TextStyle.Bold = true
 	done_label.Alignment = fyne.TextAlignTrailing
-	generate_button := widget.NewButton("Generate", func() {
+	generate_button := widget.NewButton("Сгенерировать", func() {
 		errors.SetText("")
 		width_value, _ := strconv.Atoi(width.Text)
 		c := chars.Text
@@ -157,7 +157,7 @@ func main() {
 			}
 			fmt.Println(result)
 			writer.Write([]byte(result))
-			done_label.SetText("Done!")
+			done_label.SetText("Готово")
 
 		}, w)
 	})
@@ -165,9 +165,10 @@ func main() {
 	cont := container.NewVBox(
 		width, 
 		chars, 
-		container.NewHBox(file_selected, select_button, done_label), 
+		container.NewHBox(file_selected, select_button), 
 		generate_button, 
-		errors)
+		errors,
+		done_label)
 	w.Resize(fyne.NewSize(600, 600))
 	w.SetContent(container.NewStack(cont))
 	w.ShowAndRun()
